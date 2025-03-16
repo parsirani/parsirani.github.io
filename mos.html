@@ -1,0 +1,335 @@
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>امام کوین - خمس</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Morabba';
+            src: url('Morabba-Bold.woff') format('woff');
+            font-weight: bold;
+        }
+        body {
+            font-family: 'Morabba', sans-serif;
+        }
+        .level-text {
+            font-size: 0.75rem; /* کوچک کردن اندازه لول */
+        }
+        button, .cursor-pointer {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .turbo-boost {
+            box-shadow: 0 0 15px 5px green;
+        }
+        .completed {
+            color: red;
+        }
+        .back-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 12px;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        .back-button:hover {
+            background-color: white;
+            color: black;
+            border: 2px solid #4CAF50;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-black to-gray-800 text-white font-morabba min-h-screen flex flex-col items-center p-4">
+    <div class="w-full max-w-sm">
+        <div class="text-center my-4">
+            <h1 class="text-2xl">امامی های شما</h1>
+            <div class="text-4xl font-bold my-2 flex justify-center items-center">
+                <span class="coin-icon text-3xl">🪙</span>
+                <span id="balance" class="ml-2">0</span>
+            </div>
+        </div>
+
+        <div class="my-4">
+            <h2 class="text-xl mb-2 text-right">جدول رزق</h2>
+            <div class="flex justify-around">
+                <div id="turbo" class="bg-gray-700 bg-opacity-40 p-4 rounded-lg text-center w-1/2 mx-1 cursor-pointer">
+                    <span class="text-2xl">🚀</span>
+                    <p>افزایش سرعت امامیه</p>
+                    <p id="turbo-count">3/3 موجود</p>
+                </div>
+                <div id="full-energy" class="bg-gray-700 bg-opacity-40 p-4 rounded-lg text-center w-1/2 mx-1 cursor-pointer">
+                    <span class="text-2xl">⚡</span>
+                    <p>امامیه کامل روزانه</p>
+                    <p id="full-energy-count">3/3 موجود</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="my-4">
+            <h2 class="text-xl mb-2 text-right">جدول روزی</h2>
+            <div id="divine-queen" class="bg-gray-700 bg-opacity-40 p-4 rounded-lg mb-2 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-2xl">☫</span>
+                        <div class="mr-2 text-right">
+                            <p> صلوات شمار </p>
+                            <p id="divine-queen-status" class="level-text"></p>
+                        </div>
+                    </div>
+                    <div class="text-gray-400">5000</div>
+                </div>
+            </div>
+            <div id="multi-hit" class="bg-gray-700 bg-opacity-40 p-4 rounded-lg mb-2 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-2xl">👆</span>
+                        <div class="mr-2 text-right">
+                            <p> سرعت امامیه</p>
+                            <p id="multi-hit-level" class="level-text">لول 1</p>
+                        </div>
+                    </div>
+                    <div class="text-gray-400" id="multi-hit-price">100</div>
+                </div>
+            </div>
+            <div id="increase-energy" class="bg-gray-700 bg-opacity-40 p-4 rounded-lg mb-2 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-2xl">⚡</span>
+                        <div class="mr-2 text-right">
+                            <p> ظرفیت امامیه</p>
+                            <p id="increase-energy-level" class="level-text">لول 1</p>
+                        </div>
+                    </div>
+                    <div class="text-gray-400" id="increase-energy-price">500</div>
+                </div>
+            </div>
+            <div id="increase-refill-speed" class="bg-gray-700 bg-opacity-40 p-4 rounded-lg mb-2 cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-2xl">⏱️</span>
+                        <div class="mr-2 text-right">
+                            <p>سرعت پرشدن امامیه</p>
+                            <p id="increase-refill-speed-level" class="level-text">لول 1</p>
+                        </div>
+                    </div>
+                    <div class="text-gray-400" id="increase-refill-speed-price">100</div>
+                </div>
+            </div>
+        </div>
+        <button id="back-button" class="back-button">بازگشت به صفحه اصلی</button>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // نمایش موجودی
+            document.getElementById('balance').textContent = localStorage.getItem('userScore') || 0;
+
+            // تنظیم پس‌زمینه بر اساس لیگ
+            function updateBackground(score) {
+                const bodyElement = document.body;
+                if (score < 1000) {
+                    bodyElement.style.background = 'linear-gradient(180deg, #23a13f, #e0df7c)'; // لیگ برنزی
+                } else if (score < 2000) {
+                    bodyElement.style.background = 'linear-gradient(180deg, #23a13f, #aae9ee)'; // لیگ نقره‌ای
+                } else if (score < 3000) {
+                    bodyElement.style.background = 'linear-gradient(180deg, #23a13f, #ecd60e)'; // لیگ طلایی
+                } else {
+                    bodyElement.style.background = 'linear-gradient(180deg, #23a13f, #4767ac)'; // لیگ الماس
+                }
+            }
+
+            // بارگذاری امتیاز و تنظیم پس‌زمینه
+            const score = parseInt(localStorage.getItem('userScore')) || 0;
+            updateBackground(score);
+
+            // تعداد استفاده‌های باقی‌مانده
+            let turboUses = parseInt(localStorage.getItem('turboUses')) || 3;
+            let fullEnergyUses = parseInt(localStorage.getItem('fullEnergyUses')) || 3;
+
+            // به‌روزرسانی نمایش تعداد استفاده‌ها
+            function updateCounts() {
+                document.getElementById('turbo-count').textContent = `${turboUses}/3 موجود`;
+                document.getElementById('full-energy-count').textContent = `${fullEnergyUses}/3 موجود`;
+            }
+
+            updateCounts();
+
+            // بارگذاری لول و قیمت چند ضربه‌ای
+            let multiHitLevel = parseInt(localStorage.getItem('multiHitLevel')) || 1;
+            let multiHitPrice = parseInt(localStorage.getItem('multiHitPrice')) || 100;
+            document.getElementById('multi-hit-level').textContent = `لول ${multiHitLevel}`;
+            document.getElementById('multi-hit-price').textContent = multiHitPrice;
+
+            // بارگذاری لول و قیمت افزایش ظرفیت انرژی
+            let increaseEnergyLevel = parseInt(localStorage.getItem('increaseEnergyLevel')) || 1;
+            let increaseEnergyPrice = parseInt(localStorage.getItem('increaseEnergyPrice')) || 500;
+            document.getElementById('increase-energy-level').textContent = `لول ${increaseEnergyLevel}`;
+            document.getElementById('increase-energy-price').textContent = increaseEnergyPrice;
+
+            // بارگذاری لول و قیمت سرعت پرشدن تسبیح
+            let increaseRefillSpeedLevel = parseInt(localStorage.getItem('increaseRefillSpeedLevel')) || 1;
+            let increaseRefillSpeedPrice = parseInt(localStorage.getItem('increaseRefillSpeedPrice')) || 100;
+            document.getElementById('increase-refill-speed-level').textContent = `لول ${increaseRefillSpeedLevel}`;
+            document.getElementById('increase-refill-speed-price').textContent = increaseRefillSpeedPrice;
+
+            // بارگذاری وضعیت ملکه الهی
+            function updateDivineQueenStatus() {
+                const status = localStorage.getItem('divineQueenActive') === 'true' ? 'فعال' : 'غیرفعال';
+                document.getElementById('divine-queen-status').textContent = status;
+            }
+
+            // خرید بوستر
+            function buyBooster(type) {
+                const balance = parseInt(localStorage.getItem('userScore')) || 0;
+                if (type === 'divine-queen' && balance >= 5000) {
+                    localStorage.setItem('userScore', balance - 5000);
+                    alert('افزایش رزق و روزی خریداری شد! از این پس به ازای هر دقیقه عدم فعالیت، 10 ذکر دریافت خواهید کرد.');
+                    localStorage.setItem('divineQueenPurchased', true);
+                    localStorage.setItem('divineQueenActive', true);
+                    localStorage.setItem('lastVisit', new Date().getTime());
+                    updateDivineQueenStatus();
+                    document.getElementById('balance').textContent = localStorage.getItem('userScore'); // به‌روزرسانی موجودی در صفحه
+                } else if (type === 'multi-hit' && balance >= multiHitPrice && multiHitLevel < 15) {
+                    localStorage.setItem('userScore', balance - multiHitPrice);
+                    multiHitLevel++;
+                    multiHitPrice *= 2;
+                    localStorage.setItem('multiHitLevel', multiHitLevel);
+                    localStorage.setItem('multiHitPrice', multiHitPrice);
+                    document.getElementById('multi-hit-level').textContent = `لول ${multiHitLevel}`;
+                    document.getElementById('multi-hit-price').textContent = multiHitPrice;
+                    document.getElementById('balance').textContent = localStorage.getItem('userScore'); // به‌روزرسانی موجودی در صفحه
+                    if (multiHitLevel === 15) {
+                        document.getElementById('multi-hit-level').classList.add('completed');
+                        document.getElementById('multi-hit-level').textContent = 'تکمیل';
+                        document.getElementById('multi-hit-price').textContent = '';
+                    }
+                } else if (type === 'increase-energy' && balance >= increaseEnergyPrice && increaseEnergyLevel < 15) {
+                    localStorage.setItem('userScore', balance - increaseEnergyPrice);
+                    increaseEnergyLevel++;
+                    increaseEnergyPrice *= 2;
+                    localStorage.setItem('increaseEnergyLevel', increaseEnergyLevel);
+                    localStorage.setItem('increaseEnergyPrice', increaseEnergyPrice);
+                    let maxEnergy = parseInt(localStorage.getItem('maxEnergy')) || 150;
+                    maxEnergy += 50;
+                    localStorage.setItem('maxEnergy', maxEnergy);
+
+                    // افزایش انرژی در صفحه اصلی
+                    let currentEnergy = parseInt(localStorage.getItem('userEnergy')) || 0;
+                    currentEnergy += 50;
+                    localStorage.setItem('userEnergy', currentEnergy);
+
+                    document.getElementById('increase-energy-level').textContent = `لول ${increaseEnergyLevel}`;
+                    document.getElementById('increase-energy-price').textContent = increaseEnergyPrice;
+                    document.getElementById('balance').textContent = localStorage.getItem('userScore'); // به‌روزرسانی موجودی در صفحه
+                    if (increaseEnergyLevel === 15) {
+                        document.getElementById('increase-energy-level').classList.add('completed');
+                        document.getElementById('increase-energy-level').textContent = 'تکمیل';
+                        document.getElementById('increase-energy-price').textContent = '';
+                    }
+                } else if (type === 'increase-refill-speed' && balance >= increaseRefillSpeedPrice && increaseRefillSpeedLevel < 5) {
+                    localStorage.setItem('userScore', balance - increaseRefillSpeedPrice);
+                    increaseRefillSpeedLevel++;
+                    increaseRefillSpeedPrice *= 2;
+                    localStorage.setItem('increaseRefillSpeedLevel', increaseRefillSpeedLevel);
+                    localStorage.setItem('increaseRefillSpeedPrice', increaseRefillSpeedPrice);
+                    document.getElementById('increase-refill-speed-level').textContent = `لول ${increaseRefillSpeedLevel}`;
+                    document.getElementById('increase-refill-speed-price').textContent = increaseRefillSpeedPrice;
+                    document.getElementById('balance').textContent = localStorage.getItem('userScore'); // به‌روزرسانی موجودی در صفحه
+                    if (increaseRefillSpeedLevel === 5) {
+                        document.getElementById('increase-refill-speed-level').classList.add('completed');
+                        document.getElementById('increase-refill-speed-level').textContent = 'تکمیل';
+                        document.getElementById('increase-refill-speed-price').textContent = '';
+                    }
+                } else {
+                    alert('موجودی کافی نیست یا لول به حداکثر رسیده است.');
+                }
+            }
+
+            // استفاده از بوستر
+            function useBooster(type) {
+                if (type === 'turbo' && turboUses > 0) {
+                    turboUses--;
+                    localStorage.setItem('turboUses', turboUses);
+                    // ارسال پیام به index.html برای افزایش ماین کردن به 5
+                    localStorage.setItem('boost', 'turbo');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 100); // بازگشت به صفحه اصلی پس از 100 میلی‌ثانیه
+                } else if (type === 'full-energy' && fullEnergyUses > 0) {
+                    fullEnergyUses--;
+                    localStorage.setItem('fullEnergyUses', fullEnergyUses);
+                    // ارسال پیام به index.html برای کامل کردن انرژی
+                    localStorage.setItem('boost', 'full-energy');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 100); // بازگشت به صفحه اصلی پس از 100 میلی‌ثانیه
+                }
+                updateCounts();
+            }
+
+            // بازنشانی استفاده‌های روزانه در ساعت 12 شب
+            function resetDailyUses() {
+                const now = new Date();
+                const lastReset = new Date(localStorage.getItem('lastReset') || 0);
+                const shouldReset = now.getDate() !== lastReset.getDate();
+
+                if (shouldReset) {
+                    turboUses = 3;
+                    fullEnergyUses = 3;
+                    localStorage.setItem('turboUses', turboUses);
+                    localStorage.setItem('fullEnergyUses', fullEnergyUses);
+                    localStorage.setItem('lastReset', now);
+                    updateCounts();
+                }
+
+                const millisTillMidnight = (new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0) - now);
+                setTimeout(resetDailyUses, millisTillMidnight);
+            }
+
+            resetDailyUses();
+
+            // دکمه بازگشت به صفحه اصلی
+            document.getElementById('back-button').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            // مدیریت دکمه برگشت گوشی
+            window.addEventListener('popstate', () => {
+                window.location.href = 'index.html';
+            });
+
+            // تغییر وضعیت ملکه الهی
+            function toggleDivineQueen() {
+                if (localStorage.getItem('divineQueenPurchased') === 'true') {
+                    const isActive = localStorage.getItem('divineQueenActive') === 'true';
+                    localStorage.setItem('divineQueenActive', !isActive);
+                    updateDivineQueenStatus();
+                } else {
+                    alert('ابتدا باید  صلوات شمار را خریداری کنید.');
+                }
+            }
+
+            // به‌روزرسانی وضعیت ملکه الهی هنگام بارگذاری صفحه
+            updateDivineQueenStatus();
+
+            // اضافه کردن Event Listener‌ها به دکمه‌ها
+            document.getElementById('turbo').addEventListener('click', () => useBooster('turbo'));
+            document.getElementById('full-energy').addEventListener('click', () => useBooster('full-energy'));
+            document.getElementById('divine-queen').addEventListener('click', toggleDivineQueen);
+            document.getElementById('multi-hit').addEventListener('click', () => buyBooster('multi-hit'));
+            document.getElementById('increase-energy').addEventListener('click', () => buyBooster('increase-energy'));
+            document.getElementById('increase-refill-speed').addEventListener('click', () => buyBooster('increase-refill-speed'));
+        });
+    </script>
+</body>
+</html>
